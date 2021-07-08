@@ -1,0 +1,9 @@
+# Rider configuration
+*DotSettings.user
+
+# Ignore build outputs
+obj/
+bin/
+out/
+TestResults/
+coverage.json

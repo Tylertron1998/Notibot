@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Net.Client;
+using Microsoft.Extensions.Logging;
 using Remora.Commands.Attributes;
 using Remora.Commands.Groups;
 using Remora.Discord.API.Abstractions.Rest;
@@ -22,11 +23,12 @@ namespace Notibot
 	{
 		private readonly InteractionContext _context;
 		private readonly IDiscordRestWebhookAPI _webhookAPI;
-
-		public YoutubeCommand(InteractionContext context, IDiscordRestWebhookAPI webhookApi)
+		private readonly ILogger<YoutubeCommand> _logger;
+		public YoutubeCommand(InteractionContext context, IDiscordRestWebhookAPI webhookApi, ILogger<YoutubeCommand> logger)
 		{
 			_context = context;
 			_webhookAPI = webhookApi;
+			_logger = logger;
 		}
 
 		[Command("subscribe")]
@@ -125,6 +127,8 @@ namespace Notibot
 			var result = await client.GetSubscriptionsAsync(new Empty());
 
 			var interestedIn = result.Subscriptions.Where(sub => sub.GuildIds.Contains(_context.GuildID.ToString()));
+			
+			_logger.LogInformation("Result: {@Result}", result);
 			
 			if (interestedIn.Any())
 			{

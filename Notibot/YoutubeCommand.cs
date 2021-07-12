@@ -122,7 +122,7 @@ namespace Notibot
 			var channel = GrpcChannel.ForAddress("http://localhost:5002");
 			var client = new YoutubeSubscription.YoutubeSubscriptionClient(channel);
 
-			var result = await client.GetSubscriptionsAsync(null);
+			var result = await client.GetSubscriptionsAsync(new Empty());
 
 			var interestedIn = result.Subscriptions.Where(sub => sub.GuildIds.Contains(_context.GuildID.ToString()));
 			

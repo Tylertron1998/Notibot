@@ -102,7 +102,8 @@ namespace Notibot
 				var result = await client.UpdateSubscriptionSettingsAsync(new NotificationSettingsUpdate
 				{
 					Channel = _context.ChannelID.ToString(),
-					Message = uploadMessage
+					Message = uploadMessage,
+					GuildId = _context.GuildID.Value.ToString()
 				});
 				if (result.Status == Status.Failed) throw new Exception(); // dirty
 			}

@@ -126,7 +126,7 @@ namespace Notibot
 
 			var result = await client.GetSubscriptionsAsync(new Empty());
 
-			var interestedIn = result.Subscriptions.Where(sub => sub.GuildIds.Contains(_context.GuildID.ToString()));
+			var interestedIn = result.Subscriptions.Where(sub => sub.GuildIds.Contains(_context.GuildID.Value.ToString()));
 			
 			_logger.LogInformation("Result: {@Result}", result);
 			

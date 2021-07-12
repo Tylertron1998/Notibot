@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Threading.Tasks;
+using Google.Protobuf.WellKnownTypes;
 using Grpc.Net.Client;
 using Remora.Commands.Attributes;
 using Remora.Commands.Groups;
@@ -27,7 +30,7 @@ namespace Notibot
 		}
 
 		[Command("subscribe")]
-		public async Task<IResult> SubscribeToChannelAsync([Description("Channel URL")] string channelUrl)
+		public async Task<IResult> SubscribeToChannelAsync([Description("Channel URL")] string channelUrl, [Description("Notification Message")] string notificationMessage)
 		{
 			var channel = GrpcChannel.ForAddress("http://localhost:5002");
 			var client = new YoutubeSubscription.YoutubeSubscriptionClient(channel);
@@ -40,7 +43,7 @@ namespace Notibot
 					GuildChannelId = _context.ChannelID.ToString(),
 					ChannelUrl = channelUrl,
 					GuildId = _context.GuildID.Value.ToString(),
-					NotificationMessage = "Hello there!"
+					NotificationMessage = notificationMessage
 				});
 				if (result.Status == Status.Failed) throw new Exception(); // dirty
 			}
@@ -110,6 +113,30 @@ namespace Notibot
 
 			await _webhookAPI.CreateFollowupMessageAsync(_context.ApplicationID, _context.Token, content: "c:");
 
+			return Result.FromSuccess();
+		}
+
+		[Command("list")]
+		public async Task<IResult> GetSubscriptionsAsync()
+		{
+			var channel = GrpcChannel.ForAddress("http://localhost:5002");
+			var client = new YoutubeSubscription.YoutubeSubscriptionClient(channel);
+
+			var result = await client.GetSubscriptionsAsync(null);
+
+			var interestedIn = result.Subscriptions.Where(sub => sub.GuildIds.Contains(_context.GuildID.ToString()));
+			
+			if (interestedIn.Any())
+			{
+				var embedFields = new List<EmbedField>();
+
+				foreach (var sub in interestedIn)
+				{
+					embedFields.Add(new EmbedField($"• {sub.ChannelTitle}", $"https://youtube.com/channel/{sub.ChannelId}"));
+				}
+
+				await _webhookAPI.CreateFollowupMessageAsync(_context.ApplicationID, _context.Token, embeds: new[] {new Embed(Fields: embedFields)});
+			}
 			return Result.FromSuccess();
 		}
 	}

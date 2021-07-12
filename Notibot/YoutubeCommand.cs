@@ -137,6 +137,10 @@ namespace Notibot
 
 				await _webhookAPI.CreateFollowupMessageAsync(_context.ApplicationID, _context.Token, embeds: new[] {new Embed(Fields: embedFields)});
 			}
+			else
+			{
+				await _webhookAPI.CreateFollowupMessageAsync(_context.ApplicationID, _context.Token, content: "yo no channels here ya dumb");
+			}
 			return Result.FromSuccess();
 		}
 	}

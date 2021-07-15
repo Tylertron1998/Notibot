@@ -60,6 +60,40 @@ namespace Notibot
 
 			return Result.FromSuccess();
 		}
+
+		[Command("submany")]
+		public async Task<IResult> SubscribeToManyAsync([Description("The channels to sub too")]
+			string channels, [Description("Message")] string message)
+		{
+			var split = channels.Split(';');
+			foreach (var s in split)
+			{
+				var channel = GrpcChannel.ForAddress("http://localhost:5002");
+				var client = new YoutubeSubscription.YoutubeSubscriptionClient(channel);
+
+				try
+				{
+					var result = await client.ManageSubscriptionAsync(new SubscriptionManageRequest
+					{
+						Type = Action.Subscribe,
+						GuildChannelId = _context.ChannelID.ToString(),
+						ChannelUrl = s,
+						GuildId = _context.GuildID.Value.ToString(),
+						NotificationMessage = message
+					});
+					if (result.Status == Status.Failed) throw new Exception(); // dirty
+				}
+				catch (Exception e)
+				{
+					Console.WriteLine(e);
+					await _webhookAPI.CreateFollowupMessageAsync(_context.ApplicationID, _context.Token, content: ":c");
+					return Result.FromError(new Result<string>());
+				}
+			}
+
+			await _webhookAPI.CreateFollowupMessageAsync(_context.ApplicationID, _context.Token, content: "C:");
+			return Result.FromSuccess();
+		}
 		
 		[Command("unsubscribe")]
 		public async Task<IResult> UnsubscribeToChannelAsync([Description("Channel URL")] string channelUrl)
